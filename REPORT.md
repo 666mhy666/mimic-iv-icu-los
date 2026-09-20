@@ -10,19 +10,21 @@ How well do demographics, laboratory measurements, and recorded vital signs clas
 
 ## Analysis
 
-Replaced a row-wise split with a patient-grouped split: the original split shared 10,058 patients across sets; the revision shares zero. Added numeric scaling and unknown-category handling. Preprocessing is fitted only on training data. Original XGBoost tuning and the original Dash interface are not claimed as rerun.
+I built the cohort in BigQuery and evaluated logistic regression and random forest on a patient-grouped holdout. The features include demographics, laboratory measurements joined at the patient level, and the earliest recorded vital sign within each ICU stay.
 
-The entry point is `train.py`. Parameters and analysis cohorts are recorded in the code and result files.
+The entry point is `train.py`. Parameters, variables, assumptions, and analysis cohorts are recorded in the code and generated result files.
 
 ## Findings
 
 In a revised patient-grouped holdout, random forest ROC-AUC was 0.612 and logistic regression ROC-AUC was 0.581. The test set contained 47,151 stays from 32,678 patients. These are new fixed-parameter benchmarks, not the original tuned-model results.
 
-![Main result](results/grouped-holdout-roc.png)
+![ROC curves from the revised patient-grouped retrospective holdout.](results/grouped-holdout-roc.png)
 
-## Limits
+_ROC curves from the revised patient-grouped retrospective holdout._
 
-This is retrospective classification. The source extraction takes the earliest available vital sign anywhere in the ICU stay, rather than enforcing a prediction-time window. Labs have no bounded lookback and are linked by patient rather than admission. These features do not support a prospective admission-time prediction claim. The source uses anchor age rather than admission-specific age and groups categories before splitting. No external or temporal validation was performed.
+## Assumptions and interpretation
+
+This is retrospective classification, not admission-time prediction. Vital signs are the earliest recorded anywhere in the ICU stay, while laboratory measurements have no bounded lookback and are joined by patient rather than admission. No external or temporal validation was performed.
 
 ## Result files
 

@@ -1,7 +1,11 @@
 # Revision notes
 
-The starting point was Heyang Ma’s independent UCLA course analysis. The public version was revised with coding-assistant support in September 2026 to improve reproducibility and interpretation. It is academic work, not employment or clinical deployment.
+## Original coursework
 
-Replaced a row-wise split with a patient-grouped split: the original split shared 10,058 patients across sets; the revision shares zero. Added numeric scaling and unknown-category handling. Preprocessing is fitted only on training data. Original XGBoost tuning and the original Dash interface are not claimed as rerun.
+The original coursework built the MIMIC-IV cohort, tuned logistic regression, random forest, and XGBoost models, and included a Dash interface.
 
-Published numerical findings refer to the revised scripts and their generated outputs. Original graded reports, instructor prompts, source data, student identifiers, and notebook outputs are not included. The original files are preserved privately.
+## September 2026 portfolio revision
+
+The September 2026 revision replaced the row-wise split with a patient-grouped split, fitted preprocessing only on training data, and added scaling and unknown-category handling. The original split shared 10,058 patients across sets; the revised split shares zero. Published numerical benchmarks come from the revised fixed-parameter logistic regression and random forest analysis; the original XGBoost tuning and Dash interface were not rerun.
+
+The public revision was prepared with coding-assistant support to improve reproducibility and interpretation. Published numerical findings refer to the revised scripts and generated outputs unless stated otherwise. Original graded reports, instructor prompts, source data, student identifiers, and notebook outputs are not included.
