@@ -11,5 +11,78 @@
   "train_prevalence": 0.4898187892499947,
   "test_prevalence": 0.49144238722402495,
   "seed": 203,
-  "evaluation": "Retrospective grouped holdout; no validated prediction-time window."
+  "evaluation": "Retrospective grouped holdout; no validated prediction-time window.",
+  "predictors": [
+    "anchor_age",
+    "wbc",
+    "potassium",
+    "sodium",
+    "creatinine",
+    "bicarbonate",
+    "hematocrit",
+    "chloride",
+    "glucose",
+    "heart_rate",
+    "temperature_fahrenheit",
+    "respiratory_rate",
+    "non_invasive_blood_pressure_systolic",
+    "non_invasive_blood_pressure_diastolic",
+    "gender",
+    "race"
+  ],
+  "excluded_predictor": "marital_status was grouped by full-cohort frequencies in the archived extraction",
+  "stacking": {
+    "splitter": "StratifiedGroupKFold",
+    "group": "subject_id",
+    "base_models": [
+      "Logistic regression",
+      "Random forest",
+      "XGBoost"
+    ],
+    "meta_model": "LogisticRegression(C=1, solver=lbfgs, max_iter=2000)",
+    "inputs": "One out-of-fold positive-class probability per base model and training stay",
+    "out_of_fold_stays": 47293,
+    "folds": [
+      {
+        "fitting_stays": 37534,
+        "validation_stays": 9759,
+        "patient_overlap": 0
+      },
+      {
+        "fitting_stays": 37810,
+        "validation_stays": 9483,
+        "patient_overlap": 0
+      },
+      {
+        "fitting_stays": 38038,
+        "validation_stays": 9255,
+        "patient_overlap": 0
+      },
+      {
+        "fitting_stays": 37772,
+        "validation_stays": 9521,
+        "patient_overlap": 0
+      },
+      {
+        "fitting_stays": 38018,
+        "validation_stays": 9275,
+        "patient_overlap": 0
+      }
+    ]
+  },
+  "models": [
+    "Logistic regression",
+    "Random forest",
+    "XGBoost",
+    "Stacking"
+  ],
+  "threshold": 0.5,
+  "packages": {
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scikit-learn": "1.5.1",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.2",
+    "xgboost": "3.1.3"
+  }
 }

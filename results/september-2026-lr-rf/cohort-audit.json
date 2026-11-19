@@ -1,0 +1,15 @@
+{
+  "cohort_stays": 94444,
+  "patients": 65355,
+  "training_stays": 47293,
+  "test_stays": 47151,
+  "training_patients": 32677,
+  "test_patients": 32678,
+  "patient_overlap": 0,
+  "original_row_split_overlapping_patients": 10058,
+  "positive_label": "LOS >= 2 days",
+  "train_prevalence": 0.4898187892499947,
+  "test_prevalence": 0.49144238722402495,
+  "seed": 203,
+  "evaluation": "Retrospective grouped holdout; no validated prediction-time window."
+}

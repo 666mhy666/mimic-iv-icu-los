@@ -1,9 +1,27 @@
 """Regression checks for patient leakage and training-only preprocessing."""
 
 import unittest
+from importlib.util import find_spec
 import numpy as np
 import pandas as pd
-from train import patient_split, preprocessing, NUMERIC, CATEGORICAL
+from sklearn.base import BaseEstimator
+from train import (
+    CATEGORICAL, NUMERIC, model_pipelines, patient_split, preprocessing, stacking_oof,
+)
+
+
+class PatientOverlapCheck(BaseEstimator):
+    """Synthetic estimator that fails if any fitted patient is scored."""
+
+    def fit(self, features, labels):
+        self.fitting_patients_ = set(features["synthetic_patient"])
+        return self
+
+    def predict_proba(self, features):
+        if self.fitting_patients_.intersection(features["synthetic_patient"]):
+            raise AssertionError("Stacking scored a patient seen by this fitted model")
+        p = features["expected_probability"].to_numpy()
+        return np.column_stack((1 - p, p))
 
 
 class EvaluationChecks(unittest.TestCase):
@@ -31,6 +49,37 @@ class EvaluationChecks(unittest.TestCase):
         self.assertEqual(result.shape[0], 1)
         imputer = transformer.named_transformers_["numeric"].named_steps["impute"]
         np.testing.assert_allclose(imputer.statistics_, 2.0)
+
+    def test_stacking_scores_each_stay_only_with_unseen_patients(self):
+        patients = pd.Series(np.repeat(np.arange(30), 2))
+        labels = patients % 2
+        expected = np.linspace(0.1, 0.9, len(patients))
+        features = pd.DataFrame({
+            "synthetic_patient": patients,
+            "expected_probability": expected,
+        })
+        pipelines = {"first": PatientOverlapCheck(), "second": PatientOverlapCheck()}
+        probabilities, folds = stacking_oof(pipelines, features, labels, patients, 203)
+        np.testing.assert_allclose(probabilities, np.column_stack((expected, expected)))
+        self.assertEqual(len(folds), 5)
+        self.assertEqual(sum(f["validation_stays"] for f in folds), len(features))
+        self.assertTrue(all(f["patient_overlap"] == 0 for f in folds))
+
+    @unittest.skipUnless(find_spec("xgboost"), "Install requirements-xgboost.txt")
+    def test_xgboost_pipeline_scores_unseen_categories(self):
+        features = pd.DataFrame({name: np.arange(24, dtype=float) for name in NUMERIC})
+        for name in CATEGORICAL:
+            features[name] = ["A", "B"] * 12
+        features.loc[0, NUMERIC[0]] = np.nan
+        labels = np.tile([0, 1], 12)
+        pipeline = model_pipelines(203, include_xgboost=True)["XGBoost"]
+        pipeline.fit(features, labels)
+        sample = features.iloc[:3].copy()
+        sample[CATEGORICAL] = "unseen"
+        probabilities = pipeline.predict_proba(sample)
+        self.assertEqual(probabilities.shape, (3, 2))
+        self.assertTrue(np.isfinite(probabilities).all())
+        np.testing.assert_allclose(probabilities.sum(axis=1), 1.0)
 
 
 if __name__ == "__main__":

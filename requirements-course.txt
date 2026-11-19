@@ -1,0 +1,3 @@
+-r requirements-xgboost.txt
+dash>=2.18,<4
+seaborn
